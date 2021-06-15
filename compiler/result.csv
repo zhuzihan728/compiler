@@ -1,0 +1,55 @@
+
+tests/open/n-func-return-type-0.s
+Syntax error at line 6, column 23.
+tests/open/p-lambda.s
+Parsing successful.
+tests/open/n-struct-tdef.s
+Syntax error at line 3, column 20.
+tests/open/p-main.s
+Parsing successful.
+tests/open/p-listcomp.s
+Parsing successful.
+tests/open/p-seq-empty.s
+Parsing successful.
+tests/open/p-tdef.s
+Parsing successful.
+tests/open/p-break.s
+Parsing successful.
+tests/open/n-return-semicolon.s
+Syntax error at line 3, column 0.
+tests/open/p-seq.s
+Parsing successful.
+tests/open/n-main-def.s
+Syntax error at line 0, column -1.
+tests/open/p-func.s
+Parsing successful.
+tests/open/p-float.s
+Parsing successful.
+tests/open/p-alias.s
+Parsing successful.
+tests/open/p-assign.s
+Parsing successful.
+tests/open/p-singlelinecomment.s
+Parsing successful.
+tests/open/n-if-else-1.s
+Syntax error at line 25, column 4.
+tests/open/p-rat.s
+Parsing successful.
+tests/open/p-multilinecomment.s
+Parsing successful.
+tests/open/p-seq-nested.s
+Parsing successful.
+tests/open/n-func-return-type-1.s
+Syntax error at line 1, column 5.
+tests/open/p-return.s
+Parsing successful.
+tests/open/p-loop.s
+Parsing successful.
+tests/open/n-func-para-type.s
+Syntax error at line 1, column 16.
+tests/open/p-if.s
+Parsing successful.
+tests/open/p-char.s
+Parsing successful.
+tests/open/p-struct.s
+Parsing successful.

@@ -1,0 +1,194 @@
+import java_cup.runtime.*;
+
+scan with {: return lexer.next_token(); :};
+
+parser code {:
+
+  static class ErrorInfo {
+    public int line;
+    public int column;
+
+    public ErrorInfo(int line, int column) {
+      this.line = line;
+      this.column = column;
+    }
+  }
+
+  Lexer lexer;
+
+  // used by SC.java to decide whether parsing is successful
+  public boolean syntaxErrors;
+
+  public Parser(Lexer lex) {
+      super(lex);
+      lexer = lex;
+  }
+
+  public void syntax_error(Symbol cur_token) {
+    this.syntaxErrors = true;
+  }
+
+  public void unrecovered_syntax_error(Symbol cur_token) throws java.lang.Exception {
+    this.syntaxErrors = true;
+    report_fatal_error(
+      "Syntax error at line " + (cur_token.left+1) + ", column "
+      + cur_token.right + ".\n", null
+    );
+  }
+
+  public void custom_err_report(String message, int line, int column)
+    throws java.lang.Exception
+  {
+    this.syntaxErrors = true;
+    report_fatal_error( message + "\n", new ErrorInfo(line, column) );
+  }
+
+:};
+
+
+/* Terminals (tokens returned by the scanner). */
+terminal Integer INTEGER; 
+terminal ALIAS, AND, BREAK, CHAR, COLON, COMMA, CONCATE, DIV, ELSE, ILLEGAL_CHARACTER, ELT, EQUAL, FALSE, FDEF, FI, FLOAT, FOR, GT, IDENTIFIER, IF, IN, INIT, LAMBDA, LEFTSQ, LEN, LOOP, LPAREN, LT, MAIN, MINUS, MULT, NOTEQ, OR, PLUS, POOL, PRINT, QMARK, RAT, RANGE, READ, RETURN, RIGHTSQ, RPAREN, SEMICOL, SEQ, STRING_LITERAL, TBOOL, TCHAR, TDEF, TFLOAT, THEN, TINT, TOP, TRAT, TRUE, LCB, RCB, DOT, POWER; 
+
+/* Non terminals */
+non terminal fucntion_call1, body2, line2, statement2, S, body1, line1, statement1, main, body, line, statement, assignment, variable, assign, type, tnumber, seq, input, output, fucntion_call, control_flow, break, expr, len_seq, var, var1, index, binary_oprator, unary_operator, constant, sequence, expr_list, expr_list1, field_reference, range, range1, range2, range_content, declaration, declarations, declare, declare_list, declare_list1, tdef, alias, fdef, fdef1, lambda, id_list, index1, epsilon; 
+
+/* Precedences */
+precedence left PLUS, MINUS, CONCATE;
+precedence left MULT, DIV;
+precedence left POWER;
+precedence left ELSE;
+precedence left AND, OR;
+precedence left DOT;
+precedence left ELT, INIT, NOTEQ, LT, GT, LEFTSQ, RIGHTSQ;
+precedence left IF, BREAK, IN;
+
+
+
+/* The grammar */
+
+S ::= declarations main declarations;
+
+declarations ::= declaration SEMICOL declarations | epsilon;
+
+main ::= MAIN LCB body1 RCB SEMICOL;
+
+body1 ::= line1 body1 | line1;
+
+line1 ::= statement1 SEMICOL 
+        |IF LPAREN expr RPAREN THEN body FI
+        |IF LPAREN expr RPAREN THEN body ELSE body FI
+        |LOOP body2 POOL ;
+
+statement1 ::= assignment | input | output | fucntion_call | RETURN | alias | tdef | fdef1;
+
+body ::= line body | line;
+
+line ::= statement SEMICOL 
+        |IF LPAREN expr RPAREN THEN body FI
+        |IF LPAREN expr RPAREN THEN body ELSE body FI
+        |LOOP body2 POOL ;
+
+statement2 ::= assignment | input | output | fucntion_call | break | control_flow | alias | tdef | fdef1 ;
+
+line2 ::=  statement2 SEMICOL 
+        |IF LPAREN expr RPAREN THEN line2 FI
+        |IF LPAREN expr RPAREN THEN body2 ELSE line2 FI
+        |LOOP body2 POOL ;
+
+body2 ::= line2 body2 | line2; 
+
+statement ::= assignment | input | output | fucntion_call | control_flow | alias | tdef | fdef1;
+
+assignment ::= variable | assign;
+
+variable ::= var1 COLON type;
+
+assign ::=  var1 EQUAL expr_list | variable EQUAL expr_list ;
+
+type ::= TOP | tnumber | TCHAR | TBOOL | seq | IDENTIFIER;
+
+tnumber ::= TINT | TRAT | TFLOAT ;
+
+seq ::= SEQ LT type GT;
+
+input ::= READ var1;
+
+output ::= PRINT expr ;
+
+fucntion_call ::= IDENTIFIER LPAREN expr_list1 RPAREN ;
+
+control_flow ::= RETURN expr | RETURN;
+
+break ::= BREAK | BREAK INTEGER;
+
+expr ::= expr binary_oprator expr
+      |  unary_operator expr
+      |  LPAREN expr RPAREN
+      |  fucntion_call1
+      |  constant 
+      |  len_seq
+      |  var1
+      |  lambda
+      |  range2
+      ;
+
+fucntion_call1 ::= fucntion_call 
+                |IF LPAREN expr RPAREN THEN body FI
+                |IF LPAREN expr RPAREN THEN body ELSE body FI;
+
+
+field_reference ::= var DOT field_reference | var DOT var;
+
+var ::= IDENTIFIER index1 | IDENTIFIER;
+
+var1 ::= var | field_reference;
+
+len_seq ::= LEN LPAREN expr RPAREN ;
+
+index1 ::= LEFTSQ index RIGHTSQ index1 | LEFTSQ index RIGHTSQ | range2;
+
+index ::= expr | expr COLON expr | expr COLON | COLON expr | COLON;
+
+range ::= expr FOR IDENTIFIER IN RANGE LPAREN range_content RPAREN ;
+
+range1 ::= range | range COMMA IF expr;
+
+range2 ::= LEFTSQ range1 RIGHTSQ;
+
+range_content ::= expr | expr COMMA expr | expr COMMA expr COMMA expr;
+
+binary_oprator ::= AND | OR | CONCATE | ELT | INIT | NOTEQ | LT | PLUS | MINUS | DIV | MULT | POWER | IN;
+
+unary_operator ::= QMARK | MINUS;
+
+constant ::= TRUE | FALSE | INTEGER | RAT | FLOAT | CHAR | STRING_LITERAL | sequence ;
+
+sequence ::= LEFTSQ expr_list1 RIGHTSQ ;
+
+expr_list ::= expr COMMA expr_list | expr ;
+
+expr_list1 ::= expr_list | epsilon ;
+
+declaration ::= tdef | alias | fdef1 | variable EQUAL expr_list | variable;
+
+declare ::= IDENTIFIER COLON type;
+
+declare_list ::= declare COMMA declare_list | declare;
+
+declare_list1 ::= declare_list | epsilon;
+
+tdef ::= TDEF IDENTIFIER LCB declare_list1 RCB;
+
+alias ::= ALIAS type type;
+
+fdef ::= FDEF IDENTIFIER LPAREN declare_list1 RPAREN LCB body RCB;
+
+fdef1 ::= fdef | fdef COLON type;
+
+lambda ::= LAMBDA id_list COLON expr;
+
+id_list ::= IDENTIFIER COMMA id_list | IDENTIFIER ;
+
+epsilon ::= ;
+
